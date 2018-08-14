@@ -1,17 +1,12 @@
 <?php
 //php 7.0
+
+include ('SortableInterface.php');
+
 pr("Hello, Dcoder! ");
 pr("it's a bubble sort!");
 
-interface Sortable
-{
-	public function sort(
-		array $a,
-		$descendDirect = false
-	): array;
-}
-
-class SortBubble implements Sortable
+class SortBubble implements SortableInterface
 {
 	public function sort(
 		array $a,
@@ -65,7 +60,7 @@ class SortBubble implements Sortable
 $sorter = new SortBubble();
 testCases($sorter);
 
-function testCases(Sortable $sorter)
+function testCases(SortableInterface $sorter)
 {
 	$cases = [
 		['a'=>[1,2,4,5,7,],
