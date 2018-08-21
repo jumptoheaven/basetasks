@@ -1,5 +1,9 @@
 <?php
-//php 7.0
+// php 7.0
+// iconv -f utf-16le -t utf-8 _helper.php.bk > _helper.php
+// file -i *
+// sed -i $'1s/^\uFEFF//' _helper.php
+
 
 include ('_helper.php');
 
@@ -10,6 +14,10 @@ $cases = [
     'SortBubble' => [
         'class' => 'SortBubble',
         'description' => 'It is a simple bubble sort',
+    ],
+    'SortSelected' => [
+        'class' => 'SortSelected',
+        'description' => 'It is a simple sorted sort',
     ],
 ];
 
