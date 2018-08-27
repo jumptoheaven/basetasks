@@ -7,6 +7,18 @@ function pr($s)
 }
 
 spl_autoload_register(function ($c) {
-    include 'classes/' . $c . '.php';
+    $path = explode('\\', $c);
+    if ($path[0] === 'App') {
+        $path[0] = 'classes';
+    }
+    $filePath = implode('/', $path);
+    $phpFile = $filePath . '.php';
+    var_export( [
+        $c,
+        $filePath,
+        $path,
+        $phpFile,
+    ]);
+    include $phpFile;
 });
 
