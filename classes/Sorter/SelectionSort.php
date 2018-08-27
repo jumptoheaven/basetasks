@@ -32,18 +32,18 @@ class SelectionSort implements SortableInterface
         $countIter = $countEls - 1;
         $startIndex = 0;
         $stopIndex = $countEls - 1;
-        for (
-            $iter = 0;
-            $iter < $countIter;
-            $iter++
-        ) {
+        for ($iter = 0; $iter < $countIter; $iter++) {
             // pr('Main iter #'.$iter.' ['.$startIndex.'-'. $stopIndex.']  -|-->  '.json_encode($a));
 
-            $indexMinimalEl = $this->arrayOperations->findIndexMinimalEl($a, $startIndex, $stopIndex);
+            if ($descendDirect) {
+                $indexSelectedEl = $this->arrayOperations->findIndexMaximumEl($a, $startIndex, $stopIndex);
+            } else {
+                $indexSelectedEl = $this->arrayOperations->findIndexMinimalEl($a, $startIndex, $stopIndex);
+            }
 
-            $isChangePos = ($indexMinimalEl !== $startIndex);
+            $isChangePos = ($indexSelectedEl !== $startIndex);
             if ($isChangePos) {
-                $this->arrayOperations->changePosEls($a, $startIndex, $indexMinimalEl);
+                $this->arrayOperations->changePosEls($a, $startIndex, $indexSelectedEl);
             }
 
             // pr('   ['.$startIndex.'-'. $stopIndex.'] -- ' . json_encode([$isChangePos, $startIndex, $indexMinimalEl]) . ' -|-->  ' . json_encode($a)   );
