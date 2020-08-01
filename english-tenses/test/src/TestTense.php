@@ -3,8 +3,8 @@
 namespace Test;
 
 use App\Model\SentenceWords;
-use App\SentenceCreator;
-use App\Transformer\TransformerInterface;
+use App\SentenceCreator\SentenceCreator;
+use App\TenseVerbCreator\TenseCreatorInterface;
 
 class TestTense
 {
@@ -19,7 +19,7 @@ class TestTense
         $this->debug = $debug;
     }
 
-    public function testTense(TransformerInterface $transformer, SentenceWords $words, string $expected): void
+    public function testTense(TenseCreatorInterface $transformer, SentenceWords $words, string $expected): void
     {
         $creator = new SentenceCreator();
         $actual = $creator->create($words, $transformer);

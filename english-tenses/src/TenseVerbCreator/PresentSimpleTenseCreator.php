@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Transformer;
+namespace App\TenseVerbCreator;
 
-use App\SentenceCreator;
 use App\Defenders\FaceDefender;
 use App\Model\SentenceWords;
+use App\SentenceCreator\SentenceCreator;
 
-class PresentSimpleTransformer implements TransformerInterface
+class PresentSimpleTenseCreator implements TenseCreatorInterface
 {
 
     /**

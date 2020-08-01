@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Transformer;
+namespace App\TenseVerbCreator;
 
-use App\SentenceCreator;
 use App\Model\SentenceWords;
+use App\SentenceCreator\SentenceCreator;
 
-interface TransformerInterface
+interface TenseCreatorInterface
 {
 
     public function transformVerb(SentenceWords $words, SentenceCreator $activeSpeech): string;

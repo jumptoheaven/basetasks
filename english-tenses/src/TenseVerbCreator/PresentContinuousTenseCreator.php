@@ -1,29 +1,35 @@
 <?php
 
-namespace App\Transformer;
+namespace App\TenseVerbCreator;
 
-use App\SentenceCreator;
 use App\Defenders\FaceDefender;
+use App\Formatter\OutputFormatter;
 use App\Model\SentenceWords;
+use App\SentenceCreator\SentenceCreator;
 
-class PresentContinuousTransformer implements TransformerInterface
+class PresentContinuousTenseCreator implements TenseCreatorInterface
 {
 
     /**
      * @var FaceDefender
      */
     private $faceDefender;
+    /**
+     * @var OutputFormatter
+     */
+    private $outputFormatter;
 
     public function __construct()
     {
         $this->faceDefender = new FaceDefender();
+        $this->outputFormatter = new OutputFormatter();
     }
 
     public function transformVerb(SentenceWords $words, SentenceCreator $activeSpeech): string
     {
         $predicate = $this->getPredicateContinuous($words->getSubject());
         $gerund = $this->getGerund($words);
-        return $predicate . ' ' . $gerund;
+        return $this->outputFormatter->arrayToString([$predicate, $gerund,]);
     }
 
     /**
