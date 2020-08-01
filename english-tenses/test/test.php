@@ -7,8 +7,8 @@ use Test\TestTense;
 require __DIR__ . "/../vendor/autoload.php";
 
 echo "**\n";
-
-$tester = new TestTense();
+$debug = (($argv[1] ?? '') === 'debug');
+$tester = new TestTense($debug);
 $transformerFactory = new TransformerFactory();
 
 $words = new SentenceWords();
