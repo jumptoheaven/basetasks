@@ -8,7 +8,7 @@ use App\Model\SentenceWords;
 use App\SentenceCreator\SentenceCreator;
 use App\WordForms\VerbForm;
 
-class PresentContinuousTenseCreator implements TenseCreatorInterface
+class PresentPerfectTenseCreator implements TenseCreatorInterface
 {
 
     /**
@@ -34,7 +34,7 @@ class PresentContinuousTenseCreator implements TenseCreatorInterface
     public function transformVerb(SentenceWords $words, SentenceCreator $activeSpeech): string
     {
         $predicate = $this->getPredicateContinuous($words->getSubject());
-        $gerund = $this->verbForm->getIngForm($words);
+        $gerund = $this->verbForm->getVerbThirdForm($words);
         return $this->outputFormatter->arrayToString([$predicate, $gerund,]);
     }
 
@@ -44,13 +44,9 @@ class PresentContinuousTenseCreator implements TenseCreatorInterface
      */
     private function getPredicateContinuous(string $subject): string
     {
-        $predicate = '';
+        $predicate = 'have';
         if ($this->faceDefender->isThirdSingleFace($subject)) {
-            $predicate = 'is';
-        } elseif ($this->faceDefender->isFirstSingleFace($subject)) {
-            $predicate = 'am';
-        } else {
-            $predicate = 'are';
+            $predicate = 'has';
         }
         return $predicate;
     }

@@ -2,8 +2,13 @@
 
 namespace App\TenseVerbCreator;
 
-class TransformerFactory
+class TenseCreatorFactory
 {
+
+    public function createPresentPerfect(): PresentPerfectTenseCreator
+    {
+        return new PresentPerfectTenseCreator();
+    }
 
     public function createPresentSimple(): PresentSimpleTenseCreator
     {

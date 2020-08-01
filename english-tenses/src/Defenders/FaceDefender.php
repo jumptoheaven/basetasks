@@ -9,7 +9,7 @@ class FaceDefender
      * @param string $subject
      * @return bool
      */
-    public function isThirdFace(string $subject): bool
+    public function isThirdSingleFace(string $subject): bool
     {
         return in_array(strtolower($subject), ['it', 'he', 'she',]);
     }
@@ -18,7 +18,7 @@ class FaceDefender
      * @param string $subject
      * @return bool
      */
-    public function isFirstFace(string $subject): bool
+    public function isFirstSingleFace(string $subject): bool
     {
         return in_array(strtolower($subject), ['i',]);
     }

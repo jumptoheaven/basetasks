@@ -32,7 +32,7 @@ class PresentFutureTenseCreator implements TenseCreatorInterface
      */
     public function transformVerb(SentenceWords $words, SentenceCreator $activeSpeech): string
     {
-        $predicate = 'will';
+        $predicate = $this->faceDefender->isFirstSingleFace($words->getSubject()) ? 'shall' : 'will';
         $verb = $words->getVerb();
         return $this->outputFormatter->arrayToString([$predicate, $verb,]);
     }
