@@ -45,7 +45,7 @@ class PresentContinuousTenseCreator implements TenseCreatorInterface
     private function getPredicateContinuous(string $subject): string
     {
         $predicate = '';
-        if ($this->faceDefender->isThirdSingleFace($subject)) {
+        if ($this->faceDefender->isThirdPerson($subject)) {
             $predicate = 'is';
         } elseif ($this->faceDefender->isFirstSingleFace($subject)) {
             $predicate = 'am';

@@ -27,7 +27,7 @@ class PresentSimpleTenseCreator implements TenseCreatorInterface
     public function transformVerb(SentenceWords $words, SentenceCreator $activeSpeech): string
     {
         $verb = $words->getVerb();
-        if ($this->faceDefender->isThirdSingleFace($words->getSubject())) {
+        if ($this->faceDefender->isThirdPerson($words->getSubject())) {
             $verb .= 's';
         }
         return $verb;

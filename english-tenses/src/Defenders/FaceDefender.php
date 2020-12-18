@@ -9,7 +9,7 @@ class FaceDefender
      * @param string $subject
      * @return bool
      */
-    public function isThirdSingleFace(string $subject): bool
+    public function isThirdPerson(string $subject): bool
     {
         return in_array(strtolower($subject), ['it', 'he', 'she',]);
     }

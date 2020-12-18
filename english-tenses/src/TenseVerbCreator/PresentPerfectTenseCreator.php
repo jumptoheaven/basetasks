@@ -33,19 +33,19 @@ class PresentPerfectTenseCreator implements TenseCreatorInterface
 
     public function transformVerb(SentenceWords $words, SentenceCreator $activeSpeech): string
     {
-        $predicate = $this->getPredicateContinuous($words->getSubject());
-        $gerund = $this->verbForm->getVerbThirdForm($words);
-        return $this->outputFormatter->arrayToString([$predicate, $gerund,]);
+        $predicate = $this->getPredicatePerfect($words->getSubject());
+        $thirdForm = $this->verbForm->getVerbThirdForm($words);
+        return $this->outputFormatter->arrayToString([$predicate, $thirdForm,]);
     }
 
     /**
      * @param string $subject
      * @return string
      */
-    private function getPredicateContinuous(string $subject): string
+    private function getPredicatePerfect(string $subject): string
     {
         $predicate = 'have';
-        if ($this->faceDefender->isThirdSingleFace($subject)) {
+        if ($this->faceDefender->isThirdPerson($subject)) {
             $predicate = 'has';
         }
         return $predicate;
