@@ -1,0 +1,16 @@
+FROM php
+ENV DEBIAN_FRONTEND noninteractive
+ENV TERM xterm
+ARG HOST_UID
+
+RUN apt-get update && apt-get install -y pkg-config libssl-dev locales mc git wget
+
+RUN echo 'ru_RU.UTF-8 UTF-8' > /etc/locale.gen \
+   && dpkg-reconfigure locales
+
+RUN useradd -ms /bin/bash user
+USER user
+
+WORKDIR /var/www/html
+#EXPOSE 8080
+#CMD ["php", "-S", "0.0.0.0:8080", "-t", "/var/www/html/public"]
