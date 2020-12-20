@@ -2,7 +2,7 @@
   "name": "yurich/integer-hash-storage",
   "description": "hash storage in shared memory",
   "type": "library",
-  "minimum-stability": "dev",
+  "minimum-stability": "stable",
   "require": {
     "php": "^7.4",
     "ext-shmop": "*"
@@ -10,10 +10,11 @@
   "autoload": {
     "psr-4": {
       "Yurich\\": "src/Yurich",
-      "Yurich\\Test\\": "test/Yurich/Test"
+      "Yurich\\Test\\": "tests/Yurich/Test"
     }
   },
   "require-dev": {
-    "squizlabs/php_codesniffer": "*"
+    "squizlabs/php_codesniffer": "^3",
+    "phpunit/phpunit": "^9"
   }
 }
