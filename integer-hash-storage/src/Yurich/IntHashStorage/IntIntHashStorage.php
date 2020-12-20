@@ -24,10 +24,11 @@ class IntIntHashStorage
     public function __construct($shmId, int $size)
     {
         if (!is_resource($shmId) || get_resource_type($shmId) !== 'shmop') {
-            throw new InvalidArgumentException();
+            throw new InvalidArgumentException('IntIntHashStorage requires shared memory resource');
         }
         $this->shm_id = $shmId;
-        $this->reservedShmByteSize = $size;
+        // $this->reservedShmByteSize = $size;
+        $this->reservedShmByteSize = shmop_size($shmId);
     }
 
     /**
