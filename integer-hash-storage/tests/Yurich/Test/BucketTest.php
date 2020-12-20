@@ -14,6 +14,6 @@ class BucketTest extends TestCase
     public function testBucketsLength(): void
     {
         $this->assertEquals(PHP_INT_SIZE * 3, KeyValueBucket::getBucketLength());
-        $this->assertEquals(PHP_INT_SIZE, RefBucket::getBucketLength());
+        $this->assertEquals(PHP_INT_SIZE, RefBucket::getLength());
     }
 }

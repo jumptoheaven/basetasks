@@ -12,6 +12,21 @@ class KeyValueBucket
     private int $value;
     private int $nextRef;
 
+    /**
+     * @return int
+     * 64 bit:  8 * 3 = 24
+     * 32 bit:  4 * 3 = 12
+     */
+    public static function getBucketLength(): int
+    {
+        return  PHP_INT_SIZE * 3;
+    }
+
+    public static function createFromBinary(string $binary): self
+    {
+        $unpack = unpack('q/q/q/', $binary);
+    }
+
     public function __construct(int $key, int $value, int $nextRef = self::NULL_REF)
     {
         $this->key = $key;
@@ -57,16 +72,6 @@ class KeyValueBucket
     {
         return /*self::BUCKET_TYPE . */
             $this->packInt($this->key) . $this->packInt($this->value) . $this->packInt($this->nextRef);
-    }
-
-    /**
-     * @return int
-     * 64 bit: 1 + 8 * 2 = 17
-     * 32 bit: 1 + 4 * 2 = 9
-     */
-    public static function getBucketLength(): int
-    {
-        return /*strlen(self::BUCKET_TYPE) + */ PHP_INT_SIZE * 3;
     }
 
     private function packInt(int $val): string

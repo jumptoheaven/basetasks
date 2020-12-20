@@ -5,30 +5,23 @@ declare(strict_types=1);
 namespace Yurich\IntHashStorage;
 
 use InvalidArgumentException;
+use Yurich\IntHashStorage\Storage\MemoryManager;
 
 class IntIntHashStorage
 {
-    /**
-     * @var resource
-     */
-    private $shm_id;
-    /**
-     * @var int
-     */
-    private int $reservedShmByteSize;
+    private MemoryManager $memoryManager;
 
     /**
      * @param resource $shmId результат вызова \shmop_open
      * @param int $size размер зарезервированного блока в разделяемой памяти (~100GB)
+     * Second parameter doesn't use because is used function shmop_size($shmId)
      */
     public function __construct($shmId, int $size)
     {
         if (!is_resource($shmId) || get_resource_type($shmId) !== 'shmop') {
             throw new InvalidArgumentException('IntIntHashStorage requires shared memory resource');
         }
-        $this->shm_id = $shmId;
-        // $this->reservedShmByteSize = $size;
-        $this->reservedShmByteSize = shmop_size($shmId);
+        $this->memoryManager = MemoryManager::create($shmId);
     }
 
     /**
@@ -38,7 +31,7 @@ class IntIntHashStorage
      */
     public function put(int $key, int $value): ?int
     {
-        // ...
+        return $this->memoryManager->put($key, $value);
     }
 
     /**
@@ -47,6 +40,6 @@ class IntIntHashStorage
      */
     public function get(int $key): ?int
     {
-        // ...
+        return $this->memoryManager->get($key);
     }
 }
