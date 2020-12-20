@@ -1,6 +1,10 @@
 <?php
 declare(strict_types = 1);
 
+namespace Yurich\IntHashStorage;
+
+use InvalidArgumentException;
+
 class IntIntHashStorage
 {
     /**
@@ -18,7 +22,7 @@ class IntIntHashStorage
      */
     public function __construct($shmId, int $size)
     {
-        if (!is_resource($shmId) || get_resource_type($shmId) !== 'sysvshm') {
+        if (!is_resource($shmId) || get_resource_type($shmId) !== 'shmop') {
             throw new InvalidArgumentException();
         }
         $this->shm_id = $shmId;

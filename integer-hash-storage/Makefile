@@ -31,3 +31,5 @@ phpcs:
 	$(DOCKER_CMD) exec php ./vendor/bin/phpcs --standard=PSR12 ./src/
 phpcbf:
 	$(DOCKER_CMD) exec php ./vendor/bin/phpcbf --standard=PSR12 ./src/
+php-test:
+	$(DOCKER_CMD) exec php php ./test.php

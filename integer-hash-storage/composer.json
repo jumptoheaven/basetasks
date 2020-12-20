@@ -9,8 +9,8 @@
   },
   "autoload": {
     "psr-4": {
-      "App\\": "src/",
-      "Test\\": "test/src/"
+      "Yurich\\": "src/Yurich",
+      "Yurich\\Test\\": "test/Yurich/Test"
     }
   },
   "require-dev": {

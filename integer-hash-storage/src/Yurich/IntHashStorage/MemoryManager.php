@@ -1,5 +1,7 @@
 <?php
 
+namespace Yurich\IntHashStorage;
+
 class MemoryManager
 {
 
