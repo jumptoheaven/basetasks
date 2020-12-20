@@ -4,7 +4,7 @@ services:
   php:
     build:
       context: ./docker/
-      dockerfile: php.dev.docker
+      dockerfile: Dockerfile
     user: ${HOST_UID}
     container_name: yurich-php-cli
     volumes:
