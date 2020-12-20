@@ -6,6 +6,8 @@ list:
 
 
 build:
+	$(DOCKER_CMD) up -d --build
+build-force:
 	$(DOCKER_CMD) up -d --force-recreate --build
 start:
 	$(DOCKER_CMD) start
@@ -14,7 +16,7 @@ stop:
 up:
 	$(DOCKER_CMD) up
 up-daemon:
-	$(DOCKER_CMD) up
+	$(DOCKER_CMD) up -d
 down:
 	$(DOCKER_CMD) down
 show-logs:
@@ -22,9 +24,9 @@ show-logs:
 php-console:
 	$(DOCKER_CMD) exec php bash
 php-composer-install:
-	$(DOCKER_CMD) exec php composer.phar install
+	$(DOCKER_CMD) exec php composer install
 php-composer-update:
-	$(DOCKER_CMD) exec php composer.phar install
+	$(DOCKER_CMD) exec php composer update
 phpcs:
 	$(DOCKER_CMD) exec php ./vendor/bin/phpcs --standard=PSR12 ./src/
 phpcbf:
