@@ -4,6 +4,8 @@ namespace Yurich\IntHashStorage\Storage;
 
 use InvalidArgumentException;
 use Yurich\IntHashStorage\Bucket\ExportBinaryInterface;
+use Yurich\IntHashStorage\Bucket\Factory\KeyValueBucketFactory;
+use Yurich\IntHashStorage\Bucket\Factory\RefBucketFactory;
 use Yurich\IntHashStorage\Bucket\KeyValueBucket;
 use Yurich\IntHashStorage\Bucket\RefBucket;
 
@@ -67,15 +69,12 @@ class MemoryManager
         if ($refBucket->isEmptyTargetRef()) {
             $this->countUsedRefBucket++;
             $keyValueRef = $this->settings->getSizeForRefsPartition() + $this->countUsedRefBucket * KeyValueBucket::getLength();
-            $keyValueBucket = $this->createKeyValueBucket($key, $value);
+            $keyValueBucket = new KeyValueBucket($key, $value, ExportBinaryInterface::NULL_REF, $keyValueRef);
             $this->writeBucket($keyValueBucket, $keyValueRef);
             $refBucket = $refBucket->withNewTargetRef($keyValueRef);
             $this->writeBucket($refBucket, $refBucket->getThisBucketRef());
         } else {
-
-//            do {
-//
-//            }
+            $existedKeyValueBucket = $this->getIterateKeyValueBucket($refBucket, $key);
         }
 
         return 0;
@@ -96,10 +95,6 @@ class MemoryManager
         return $keyValueBucket->getValue();
     }
 
-    private function createKeyValueBucket(int $key, int $value): KeyValueBucket
-    {
-        return new KeyValueBucket($key, $value);
-    }
 
     /**
      * @param RefBucket $refBucket
@@ -108,23 +103,18 @@ class MemoryManager
      */
     private function getIterateKeyValueBucket(RefBucket $refBucket, ?int $key): KeyValueBucket
     {
+        $factory = new KeyValueBucketFactory();
         $offset = $refBucket->getTargetRef();
         do {
-            $keyValueBucket = $this->getKeyValueBucket($offset);
+            $bucketLen = $factory->getLength();
+            $binary = shmop_read($this->shmId, $offset * $bucketLen, $bucketLen);
+            if ($binary === false) {
+                throw new \RuntimeException("There is an error occurs when we read shared memory $offset by $bucketLen");
+            }
+            $keyValueBucket = $factory->createFromBinary($binary, $offset);
             $offset = $keyValueBucket->getNextRef();
         } while ($keyValueBucket->getKey() === $key || !$offset);
         return $keyValueBucket;
-    }
-
-    private function getKeyValueBucket(int $offset): KeyValueBucket
-    {
-        $bucketLen = KeyValueBucket::getLength();
-        $binary = shmop_read($this->shmId, $offset * $bucketLen, $bucketLen);
-        $binaryLen = strlen($binary);
-        if ($binary === false || $bucketLen !== $binaryLen) {
-            throw new \RuntimeException("It was read less than need or fail: $bucketLen vs $binaryLen");
-        }
-        return KeyValueBucket::createFromBinary($binary);
     }
 
     private function writeBucket(ExportBinaryInterface $keyValueBucket, int $reference): void
@@ -144,8 +134,10 @@ class MemoryManager
     private function getRefBucket(int $key): RefBucket
     {
         $offset = $this->settings->getOffsetForRefBucket($key);
-        return RefBucket::createFromBinary(
-            shmop_read($this->shmId, $offset * RefBucket::getLength(), RefBucket::getLength()),
+        $factory = new RefBucketFactory();
+        $length = $factory->getLength();
+        return $factory->createFromBinary(
+            shmop_read($this->shmId, $offset * $length, $length),
             $offset
         );
     }

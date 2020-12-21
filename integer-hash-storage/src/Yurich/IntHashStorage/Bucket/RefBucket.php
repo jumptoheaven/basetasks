@@ -10,10 +10,6 @@ class RefBucket implements ExportBinaryInterface
 
     public static function createFromBinary(string $binary, int $thisBucketRef): self
     {
-        $unpack = unpack('q', $binary);
-        var_dump($unpack, $binary, strlen($binary), bin2hex($binary));
-        $targetRef = $unpack[1] ?? 0;
-        return new self($targetRef, $thisBucketRef);
     }
 
     public static function getLength(): int
