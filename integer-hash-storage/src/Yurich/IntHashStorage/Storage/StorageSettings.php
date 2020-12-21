@@ -46,15 +46,20 @@ class StorageSettings
         return $maxCount;
     }
 
+    public function getSizeForRefsPartition(): int
+    {
+        return RefBucket::getLength() * $this->getMaxCountRefBuckets();
+    }
+
     private function getMaxCountKeyValuePairs(): int
     {
         static $maxCount;
         if (is_null($maxCount)) {
             // @TODO Sum by two bucket lengths isn't universal formula (maybe). But for my case it's work,
             //      because I work with integers only.
-            //      Main idea: I need space for the one key-value for the one ref bucket and for the one key-value bucket.
+            //      Main idea: For the one key-value I need space for the one ref bucket and for the one key-value bucket.
             //      In that way in hash storage I can store `StorageSize // (RefSize + KeyValueSize)` key-values pairs.
-            $maxCount = intdiv($this->byteSize, KeyValueBucket::getBucketLength() + RefBucket::getLength());
+            $maxCount = intdiv($this->byteSize, KeyValueBucket::getLength() + RefBucket::getLength());
         }
         return $maxCount;
     }

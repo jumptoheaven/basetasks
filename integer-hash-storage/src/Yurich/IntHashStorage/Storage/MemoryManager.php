@@ -3,6 +3,8 @@
 namespace Yurich\IntHashStorage\Storage;
 
 use InvalidArgumentException;
+use Yurich\IntHashStorage\Bucket\ExportBinaryInterface;
+use Yurich\IntHashStorage\Bucket\KeyValueBucket;
 use Yurich\IntHashStorage\Bucket\RefBucket;
 
 class MemoryManager
@@ -62,6 +64,19 @@ class MemoryManager
             'resOffset' => $this->settings->getOffsetForRefBucket($key) * RefBucket::getLength(),
         ]);
         var_dump($refBucket);
+        if ($refBucket->isEmptyTargetRef()) {
+            $this->countUsedRefBucket++;
+            $keyValueRef = $this->settings->getSizeForRefsPartition() + $this->countUsedRefBucket * KeyValueBucket::getLength();
+            $keyValueBucket = $this->createKeyValueBucket($key, $value);
+            $this->writeBucket($keyValueBucket, $keyValueRef);
+            $refBucket = $refBucket->withNewTargetRef($keyValueRef);
+            $this->writeBucket($refBucket, $refBucket->getThisBucketRef());
+        } else {
+
+//            do {
+//
+//            }
+        }
 
         return 0;
     }
@@ -76,7 +91,63 @@ class MemoryManager
         if ($refBucket->isEmptyTargetRef()) {
             return null;
         }
-        return ;
+        $keyValueBucket = $this->getIterateKeyValueBucket($refBucket, $key);
+
+        return $keyValueBucket->getValue();
+    }
+
+    private function createKeyValueBucket(int $key, int $value): KeyValueBucket
+    {
+        return new KeyValueBucket($key, $value);
+    }
+
+    /**
+     * @param RefBucket $refBucket
+     * @param int|null $key
+     * @return KeyValueBucket
+     */
+    private function getIterateKeyValueBucket(RefBucket $refBucket, ?int $key): KeyValueBucket
+    {
+        $offset = $refBucket->getTargetRef();
+        do {
+            $keyValueBucket = $this->getKeyValueBucket($offset);
+            $offset = $keyValueBucket->getNextRef();
+        } while ($keyValueBucket->getKey() === $key || !$offset);
+        return $keyValueBucket;
+    }
+
+    private function getKeyValueBucket(int $offset): KeyValueBucket
+    {
+        $bucketLen = KeyValueBucket::getLength();
+        $binary = shmop_read($this->shmId, $offset * $bucketLen, $bucketLen);
+        $binaryLen = strlen($binary);
+        if ($binary === false || $bucketLen !== $binaryLen) {
+            throw new \RuntimeException("It was read less than need or fail: $bucketLen vs $binaryLen");
+        }
+        return KeyValueBucket::createFromBinary($binary);
+    }
+
+    private function writeBucket(ExportBinaryInterface $keyValueBucket, int $reference): void
+    {
+        $binary = $keyValueBucket->toBinary();
+        $savedLen = shmop_write($this->shmId, $binary, $reference);
+        $lenForSaved = strlen($binary);
+        if ($lenForSaved !== $savedLen) {
+            throw new \RuntimeException("Quantity saved bytes doesnt equal transferred: $lenForSaved vs $savedLen");
+        }
+    }
+
+    /**
+     * @param int $key
+     * @return RefBucket
+     */
+    private function getRefBucket(int $key): RefBucket
+    {
+        $offset = $this->settings->getOffsetForRefBucket($key);
+        return RefBucket::createFromBinary(
+            shmop_read($this->shmId, $offset * RefBucket::getLength(), RefBucket::getLength()),
+            $offset
+        );
     }
 
     private function checkFullStorage(): void
@@ -87,18 +158,5 @@ class MemoryManager
         if ($this->countUsedKeyValueBucket >= $this->settings->getMaxCountKeyValueBuckets()) {
             throw new \RuntimeException('Hash storage is full (by key-values buckets)');
         }
-    }
-
-    /**
-     * @param int $key
-     * @return RefBucket
-     */
-    private function getRefBucket(int $key): RefBucket
-    {
-        $offsetForRefBucket = $this->settings->getOffsetForRefBucket($key);
-        return RefBucket::createFromBinary(
-            shmop_read($this->shmId, $offsetForRefBucket * RefBucket::getLength(), RefBucket::getLength()),
-            $offsetForRefBucket
-        );
     }
 }

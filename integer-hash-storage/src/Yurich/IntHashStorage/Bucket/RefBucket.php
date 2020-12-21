@@ -2,7 +2,7 @@
 
 namespace Yurich\IntHashStorage\Bucket;
 
-class RefBucket
+class RefBucket implements ExportBinaryInterface
 {
 
     private int $targetRef;
@@ -48,7 +48,7 @@ class RefBucket
         return $this->targetRef === 0;
     }
 
-    public function addTargetRef(int $targetRef): self
+    public function withNewTargetRef(int $targetRef): self
     {
         return new self($targetRef, $this->thisBucketRef);
     }
