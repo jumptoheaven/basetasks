@@ -2,7 +2,6 @@
 
 namespace Yurich\IntHashStorage\Storage;
 
-use Yurich\IntHashStorage\Bucket\Factory\RefBucketFactory;
 use Yurich\IntHashStorage\Bucket\KeyValueBucket;
 use Yurich\IntHashStorage\Bucket\RefBucket;
 

@@ -28,11 +28,6 @@ class KeyValueBucket extends AbstractBinaryBucket
         $this->thisBucketRef = $thisBucketRef;
     }
 
-    public function withNextRef(int $ref): self
-    {
-        return new self($this->key, $this->value, $ref, $this->thisBucketRef);
-    }
-
     /**
      * @return int|null
      */
@@ -74,5 +69,15 @@ class KeyValueBucket extends AbstractBinaryBucket
     public function toBinary(): string
     {
         return pack("q*", $this->key, $this->value, $this->nextRef);
+    }
+
+    public function withNextRef(int $ref): self
+    {
+        return new self($this->key, $this->value, $ref, $this->thisBucketRef);
+    }
+
+    public function withValue(int $value): self
+    {
+        return new self($this->key, $value, $this->nextRef, $this->thisBucketRef);
     }
 }

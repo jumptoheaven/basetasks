@@ -2,9 +2,6 @@
 
 namespace Yurich\IntHashStorage\Storage;
 
-use InvalidArgumentException;
-use Yurich\IntHashStorage\Bucket\BinaryBucketInterface;
-use Yurich\IntHashStorage\Bucket\Factory\BinaryBucketFactoryInterface;
 use Yurich\IntHashStorage\Bucket\Factory\KeyValueBucketFactory;
 use Yurich\IntHashStorage\Bucket\Factory\RefBucketFactory;
 use Yurich\IntHashStorage\Bucket\KeyValueBucket;
@@ -49,20 +46,25 @@ class MemoryManager
      */
     public function put(int $key, int $value): ?int
     {
+        $oldValue = null;
         $this->state->checkFullStorage();
 
         $refBucket = $this->getRefBucket($key);
-        if ($refBucket->isEmptyTargetRef()) {
-            $keyValueBucket = $this->keyValueBucketFactory->create($key, $value, $this->state->reserveKeyValueRef());
-            $this->sharedMemoryManager->writeBucket($keyValueBucket);
-            $refBucket = $refBucket->withNewTargetRef($keyValueBucket);
-            $this->sharedMemoryManager->writeBucket($refBucket);
-        } else {
-            $existedKeyValueBucket = $this->getIterateKeyValueBucket($refBucket, $key);
-
+        $keyValueBucket = $this->keyValueBucketFactory->createEmpty($key);
+        if (!$refBucket->isEmptyTargetRef()) {
+            $keyValueBucket = $this->getIterateKeyValueBucket($refBucket, $key);
+            if ($keyValueBucket->hasStoringRef()) {
+                $oldValue = $keyValueBucket->getValue();
+            }
         }
-
-        return 0;
+        if (!$keyValueBucket->hasStoringRef()) {
+            $keyValueBucket = $this->keyValueBucketFactory->create($key, $value, $this->state->reserveKeyValueRef());
+        }
+        $keyValueBucket = $keyValueBucket->withValue($value);
+        $this->sharedMemoryManager->writeBucket($keyValueBucket);
+        $refBucket = $refBucket->withNewTargetRef($keyValueBucket);
+        $this->sharedMemoryManager->writeBucket($refBucket);
+        return $oldValue;
     }
 
     /**
@@ -109,5 +111,4 @@ class MemoryManager
         $bucket = $this->sharedMemoryManager->readBucket($this->refBucketFactory, $this->state->refForRefBucket($key));
         return $bucket;
     }
-
 }
