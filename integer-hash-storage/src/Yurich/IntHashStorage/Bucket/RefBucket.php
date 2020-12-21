@@ -2,15 +2,11 @@
 
 namespace Yurich\IntHashStorage\Bucket;
 
-class RefBucket implements ExportBinaryInterface
+class RefBucket extends AbstractBinaryBucket
 {
 
     private int $targetRef;
     private int $thisBucketRef;
-
-    public static function createFromBinary(string $binary, int $thisBucketRef): self
-    {
-    }
 
     public static function getLength(): int
     {
@@ -44,9 +40,9 @@ class RefBucket implements ExportBinaryInterface
         return $this->targetRef === 0;
     }
 
-    public function withNewTargetRef(int $targetRef): self
+    public function withNewTargetRef(KeyValueBucket $keyValueBucket): self
     {
-        return new self($targetRef, $this->thisBucketRef);
+        return new self($keyValueBucket->getThisBucketRef(), $this->thisBucketRef);
     }
 
     /**

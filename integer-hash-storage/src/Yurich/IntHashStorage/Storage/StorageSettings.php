@@ -10,11 +10,6 @@ class StorageSettings
 
     private int $byteSize;
 
-    public static function create(int $byteSize): self
-    {
-        return new self($byteSize);
-    }
-
     public function __construct(int $byteSize)
     {
         $this->byteSize = $byteSize;

@@ -2,7 +2,7 @@
 
 namespace Yurich\IntHashStorage\Bucket;
 
-class KeyValueBucket implements ExportBinaryInterface
+class KeyValueBucket extends AbstractBinaryBucket
 {
 
     private int $key;

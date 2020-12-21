@@ -3,7 +3,8 @@
 namespace Yurich\IntHashStorage\Storage;
 
 use InvalidArgumentException;
-use Yurich\IntHashStorage\Bucket\ExportBinaryInterface;
+use Yurich\IntHashStorage\Bucket\BinaryBucketInterface;
+use Yurich\IntHashStorage\Bucket\Factory\BinaryBucketFactoryInterface;
 use Yurich\IntHashStorage\Bucket\Factory\KeyValueBucketFactory;
 use Yurich\IntHashStorage\Bucket\Factory\RefBucketFactory;
 use Yurich\IntHashStorage\Bucket\KeyValueBucket;
@@ -12,16 +13,10 @@ use Yurich\IntHashStorage\Bucket\RefBucket;
 class MemoryManager
 {
 
-    /**
-     * @var resource
-     */
-    private $shmId;
-    /**
-     * @var StorageSettings
-     */
-    private StorageSettings $settings;
-    private int $countUsedRefBucket;
-    private int $countUsedKeyValueBucket;
+    private SharedMemoryManager $sharedMemoryManager;
+    private StorageState $state;
+    private KeyValueBucketFactory $keyValueBucketFactory;
+    private RefBucketFactory $refBucketFactory;
 
     /**
      * @param resource $shmId
@@ -29,23 +24,22 @@ class MemoryManager
      */
     public static function create($shmId): self
     {
-        $settings = StorageSettings::create(shmop_size($shmId));
-        return new self($shmId, $settings);
+        $sharedMemoryManager = new SharedMemoryManager($shmId);
+        $settings = new StorageSettings($sharedMemoryManager->getByteSize());
+        $storageState = new StorageState($settings);
+        return new self($sharedMemoryManager, $storageState);
     }
 
     /**
-     * @param resource $shmId
-     * @param StorageSettings $settings
+     * @param SharedMemoryManager $sharedMemoryManager
+     * @param StorageState $storageState
      */
-    public function __construct($shmId, StorageSettings $settings)
+    public function __construct(SharedMemoryManager $sharedMemoryManager, StorageState $storageState)
     {
-        if (!is_resource($shmId) || get_resource_type($shmId) !== 'shmop') {
-            throw new InvalidArgumentException('MemoryManager requires shared memory resource');
-        }
-        $this->shmId = $shmId;
-        $this->settings = $settings;
-        $this->countUsedRefBucket = 0;
-        $this->countUsedKeyValueBucket = 0;
+        $this->sharedMemoryManager = $sharedMemoryManager;
+        $this->state = $storageState;
+        $this->keyValueBucketFactory = new KeyValueBucketFactory();
+        $this->refBucketFactory = new RefBucketFactory();
     }
 
     /**
@@ -55,26 +49,17 @@ class MemoryManager
      */
     public function put(int $key, int $value): ?int
     {
-        $this->checkFullStorage();
+        $this->state->checkFullStorage();
 
         $refBucket = $this->getRefBucket($key);
-        var_dump([
-            '$this->settings->getMaxCountRefBuckets()' => $this->settings->getMaxCountRefBuckets(),
-            'key' => $key,
-            'offset' => $this->settings->getOffsetForRefBucket($key),
-            'buckRefLen' => RefBucket::getLength(),
-            'resOffset' => $this->settings->getOffsetForRefBucket($key) * RefBucket::getLength(),
-        ]);
-        var_dump($refBucket);
         if ($refBucket->isEmptyTargetRef()) {
-            $this->countUsedRefBucket++;
-            $keyValueRef = $this->settings->getSizeForRefsPartition() + $this->countUsedRefBucket * KeyValueBucket::getLength();
-            $keyValueBucket = new KeyValueBucket($key, $value, ExportBinaryInterface::NULL_REF, $keyValueRef);
-            $this->writeBucket($keyValueBucket, $keyValueRef);
-            $refBucket = $refBucket->withNewTargetRef($keyValueRef);
-            $this->writeBucket($refBucket, $refBucket->getThisBucketRef());
+            $keyValueBucket = $this->keyValueBucketFactory->create($key, $value, $this->state->reserveKeyValueRef());
+            $this->sharedMemoryManager->writeBucket($keyValueBucket);
+            $refBucket = $refBucket->withNewTargetRef($keyValueBucket);
+            $this->sharedMemoryManager->writeBucket($refBucket);
         } else {
             $existedKeyValueBucket = $this->getIterateKeyValueBucket($refBucket, $key);
+
         }
 
         return 0;
@@ -91,8 +76,7 @@ class MemoryManager
             return null;
         }
         $keyValueBucket = $this->getIterateKeyValueBucket($refBucket, $key);
-
-        return $keyValueBucket->getValue();
+        return $keyValueBucket->hasStoringRef() ? $keyValueBucket->getValue() : null;
     }
 
 
@@ -103,28 +87,16 @@ class MemoryManager
      */
     private function getIterateKeyValueBucket(RefBucket $refBucket, ?int $key): KeyValueBucket
     {
-        $factory = new KeyValueBucketFactory();
         $offset = $refBucket->getTargetRef();
         do {
-            $bucketLen = $factory->getLength();
-            $binary = shmop_read($this->shmId, $offset * $bucketLen, $bucketLen);
-            if ($binary === false) {
-                throw new \RuntimeException("There is an error occurs when we read shared memory $offset by $bucketLen");
-            }
-            $keyValueBucket = $factory->createFromBinary($binary, $offset);
+            /** @var KeyValueBucket $keyValueBucket */
+            $keyValueBucket = $this->sharedMemoryManager->readBucket($this->keyValueBucketFactory, $offset);
             $offset = $keyValueBucket->getNextRef();
         } while ($keyValueBucket->getKey() === $key || !$offset);
-        return $keyValueBucket;
-    }
-
-    private function writeBucket(ExportBinaryInterface $keyValueBucket, int $reference): void
-    {
-        $binary = $keyValueBucket->toBinary();
-        $savedLen = shmop_write($this->shmId, $binary, $reference);
-        $lenForSaved = strlen($binary);
-        if ($lenForSaved !== $savedLen) {
-            throw new \RuntimeException("Quantity saved bytes doesnt equal transferred: $lenForSaved vs $savedLen");
+        if ($keyValueBucket->getKey() !== $key) {
+            $this->keyValueBucketFactory->createEmpty($key);
         }
+        return $keyValueBucket;
     }
 
     /**
@@ -133,22 +105,9 @@ class MemoryManager
      */
     private function getRefBucket(int $key): RefBucket
     {
-        $offset = $this->settings->getOffsetForRefBucket($key);
-        $factory = new RefBucketFactory();
-        $length = $factory->getLength();
-        return $factory->createFromBinary(
-            shmop_read($this->shmId, $offset * $length, $length),
-            $offset
-        );
+        /** @var RefBucket $bucket */
+        $bucket = $this->sharedMemoryManager->readBucket($this->refBucketFactory, $this->state->refForRefBucket($key));
+        return $bucket;
     }
 
-    private function checkFullStorage(): void
-    {
-        if ($this->countUsedRefBucket >= $this->settings->getMaxCountRefBuckets()) {
-            throw new \RuntimeException('Hash storage is full (by refs buckets)');
-        }
-        if ($this->countUsedKeyValueBucket >= $this->settings->getMaxCountKeyValueBuckets()) {
-            throw new \RuntimeException('Hash storage is full (by key-values buckets)');
-        }
-    }
 }
