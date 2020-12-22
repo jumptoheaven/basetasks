@@ -9,8 +9,8 @@
   },
   "autoload": {
     "psr-4": {
-      "Yurich\\": "src/Yurich",
-      "Yurich\\Test\\": "tests/Yurich/Test"
+      "Yurich\\IntHashStorage\\": "src/Yurich/IntHashStorage",
+      "Yurich\\IntHashStorage\\Test\\": "tests/Yurich/IntHashStorage/Test"
     }
   },
   "require-dev": {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Yurich\IntHashStorage\Storage;
 
 use Yurich\IntHashStorage\Bucket\Factory\KeyValueBucketFactory;
