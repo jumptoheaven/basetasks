@@ -33,6 +33,7 @@ class SharedMemoryManager
     public function readBucket(BinaryBucketFactoryInterface $factory, int $offset): BinaryBucketInterface
     {
         $bucketLen = $factory->getLength();
+        \var_dump($this->shmId, \json_encode([$offset, $bucketLen, $offset * $bucketLen]));
         $binary = shmop_read($this->shmId, $offset * $bucketLen, $bucketLen);
         if ($binary === false) {
             throw new \RuntimeException("There is an error occurs when we read shared memory $offset by $bucketLen");

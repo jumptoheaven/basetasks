@@ -25,20 +25,12 @@ class StorageSettings
 
     public function getMaxCountRefBuckets(): int
     {
-        static $maxCount;
-        if (is_null($maxCount)) {
-            $maxCount = $this->getMaxCountKeyValuePairs();
-        }
-        return $maxCount;
+        return $this->getMaxCountBucketPairs();
     }
 
     public function getMaxCountKeyValueBuckets(): int
     {
-        static $maxCount;
-        if (is_null($maxCount)) {
-            $maxCount = $this->getMaxCountKeyValuePairs();
-        }
-        return $maxCount;
+        return $this->getMaxCountBucketPairs();
     }
 
     public function getSizeForRefsPartition(): int
@@ -46,17 +38,13 @@ class StorageSettings
         return RefBucket::getLength() * $this->getMaxCountRefBuckets();
     }
 
-    private function getMaxCountKeyValuePairs(): int
+    public function getMaxCountBucketPairs(): int
     {
-        static $maxCount;
-        if (is_null($maxCount)) {
-            // @TODO Sum by two bucket lengths isn't universal formula (maybe). But for my case it's work,
-            //      because I work with integers only.
-            //      Main idea: For the one key-value I need space for the one ref bucket and for the one key-value bucket.
-            //      In that way in hash storage I can store `StorageSize // (RefSize + KeyValueSize)` key-values pairs.
-            $maxCount = intdiv($this->byteSize, KeyValueBucket::getLength() + RefBucket::getLength());
-        }
-        return $maxCount;
+        // @TODO Sum by two bucket lengths isn't universal formula (maybe). But for my case it's work,
+        //      because I work with integers only.
+        //      Main idea: For the one key-value I need space for the one ref bucket and for the one key-value bucket.
+        //      In that way in hash storage I can store `StorageSize // (RefSize + KeyValueSize)` key-values pairs.
+        return intdiv($this->byteSize, KeyValueBucket::getLength() + RefBucket::getLength());
     }
 
     private function generateHash(int $key): string
