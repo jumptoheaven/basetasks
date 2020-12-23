@@ -27,18 +27,17 @@ class SharedMemoryManager
 
     /**
      * @param BinaryBucketFactoryInterface $factory
-     * @param int $offset
+     * @param int $ref
      * @return BinaryBucketInterface
      */
-    public function readBucket(BinaryBucketFactoryInterface $factory, int $offset): BinaryBucketInterface
+    public function readBucket(BinaryBucketFactoryInterface $factory, int $ref): BinaryBucketInterface
     {
         $bucketLen = $factory->getLength();
-        \var_dump($this->shmId, \json_encode([$offset, $bucketLen, $offset * $bucketLen]));
-        $binary = shmop_read($this->shmId, $offset * $bucketLen, $bucketLen);
+        $binary = shmop_read($this->shmId, $ref, $bucketLen);
         if ($binary === false) {
-            throw new \RuntimeException("There is an error occurs when we read shared memory $offset by $bucketLen");
+            throw new \RuntimeException("There is an error occurs when we read shared memory $ref by $bucketLen");
         }
-        return $factory->createFromBinary($binary, $offset);
+        return $factory->createFromBinary($binary, $ref);
     }
 
     /**

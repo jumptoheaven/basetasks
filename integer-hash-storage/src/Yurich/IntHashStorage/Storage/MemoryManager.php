@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Yurich\IntHashStorage\Storage;
 
+use Yurich\IntHashStorage\Bucket\BinaryBucketInterface;
 use Yurich\IntHashStorage\Bucket\Factory\KeyValueBucketFactory;
 use Yurich\IntHashStorage\Bucket\Factory\RefBucketFactory;
 use Yurich\IntHashStorage\Bucket\KeyValueBucket;
@@ -91,14 +92,17 @@ class MemoryManager
      */
     private function getIterateKeyValueBucket(RefBucket $refBucket, ?int $key): KeyValueBucket
     {
-        $offset = $refBucket->getTargetRef();
+        $ref = $refBucket->getTargetRef();
+        if ($ref === BinaryBucketInterface::NULL_REF) {
+            return $this->keyValueBucketFactory->createEmpty($key);
+        }
         do {
             /** @var KeyValueBucket $keyValueBucket */
-            $keyValueBucket = $this->sharedMemoryManager->readBucket($this->keyValueBucketFactory, $offset);
-            $offset = $keyValueBucket->getNextRef();
-        } while ($keyValueBucket->getKey() === $key || !$offset);
+            $keyValueBucket = $this->sharedMemoryManager->readBucket($this->keyValueBucketFactory, $ref);
+            $ref = $keyValueBucket->getNextRef();
+        } while ($keyValueBucket->getKey() === $key && $ref !== BinaryBucketInterface::NULL_REF);
         if ($keyValueBucket->getKey() !== $key) {
-            $this->keyValueBucketFactory->createEmpty($key);
+            $keyValueBucket = $this->keyValueBucketFactory->createEmpty($key);
         }
         return $keyValueBucket;
     }

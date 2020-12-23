@@ -5,6 +5,9 @@ namespace Yurich\IntHashStorage\Storage;
 use Yurich\IntHashStorage\Bucket\KeyValueBucket;
 use Yurich\IntHashStorage\Bucket\RefBucket;
 
+/**
+ * @TODO Refactor storage settings max count to separate static object (cache)
+ */
 class StorageSettings
 {
 
