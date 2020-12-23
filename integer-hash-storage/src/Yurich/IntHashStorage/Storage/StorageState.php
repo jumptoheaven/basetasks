@@ -4,16 +4,19 @@ namespace Yurich\IntHashStorage\Storage;
 
 use Yurich\IntHashStorage\Bucket\KeyValueBucket;
 use Yurich\IntHashStorage\Bucket\RefBucket;
+use Yurich\IntHashStorage\Storage\Service\HashService;
 
 class StorageState
 {
     private StorageSettings $settings;
     private int $countUsedRefBucket;
     private int $countUsedKeyValueBucket;
+    private HashService $hashService;
 
-    public function __construct(StorageSettings $settings)
+    public function __construct(StorageSettings $settings, HashService $hashService)
     {
         $this->settings = $settings;
+        $this->hashService = $hashService;
         $this->countUsedRefBucket = 0;
         $this->countUsedKeyValueBucket = 0;
     }
@@ -41,6 +44,6 @@ class StorageState
      */
     public function refForRefBucket(int $key): int
     {
-        return $this->settings->getOffsetForRefBucket($key) * RefBucket::getLength();
+        return $this->hashService->getOffsetForRefBucket($key) * RefBucket::getLength();
     }
 }

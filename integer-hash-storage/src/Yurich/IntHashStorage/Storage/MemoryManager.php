@@ -9,6 +9,7 @@ use Yurich\IntHashStorage\Bucket\Factory\KeyValueBucketFactory;
 use Yurich\IntHashStorage\Bucket\Factory\RefBucketFactory;
 use Yurich\IntHashStorage\Bucket\KeyValueBucket;
 use Yurich\IntHashStorage\Bucket\RefBucket;
+use Yurich\IntHashStorage\Storage\Service\HashService;
 
 class MemoryManager
 {
@@ -25,8 +26,9 @@ class MemoryManager
     public static function create($shmId): self
     {
         $sharedMemoryManager = new SharedMemoryManager($shmId);
-        $settings = new StorageSettings($sharedMemoryManager->getByteSize());
-        $storageState = new StorageState($settings);
+        $settings = $sharedMemoryManager->createSettings();
+        $hashService = new HashService($settings);
+        $storageState = new StorageState($settings, $hashService);
         return new self($sharedMemoryManager, $storageState);
     }
 

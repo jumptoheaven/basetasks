@@ -19,10 +19,16 @@ class SharedMemoryManager
      */
     public function __construct($shmId)
     {
-        if (!is_resource($shmId) || get_resource_type($shmId) !== 'shmop') {
+        if (!$this->isShmopResource($shmId)) {
+            //if (!($shmId instanceof \Shmop)) { // php8
             throw new InvalidArgumentException('MemoryManager requires shared memory resource');
         }
         $this->shmId = $shmId;
+    }
+
+    public function createSettings(): StorageSettings
+    {
+        return new StorageSettings($this->getByteSize());
     }
 
     /**
@@ -59,5 +65,14 @@ class SharedMemoryManager
     public function getByteSize(): int
     {
         return shmop_size($this->shmId);
+    }
+
+    /**
+     * @param $shmId
+     * @return bool
+     */
+    private function isShmopResource($shmId): bool
+    {
+        return is_resource($shmId) && get_resource_type($shmId) === 'shmop';
     }
 }

@@ -18,9 +18,6 @@ class IntIntHashStorage
      */
     public function __construct($shmId, int $size)
     {
-        if (!is_resource($shmId) || get_resource_type($shmId) !== 'shmop') {
-            throw new InvalidArgumentException('IntIntHashStorage requires shared memory resource');
-        }
         $this->memoryManager = MemoryManager::create($shmId);
     }
 

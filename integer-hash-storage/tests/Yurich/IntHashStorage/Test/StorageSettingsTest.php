@@ -23,12 +23,17 @@ class StorageSettingsTest extends TestCase
         $storageByteSize = 1024;
         $settings = new StorageSettings($storageByteSize);
         $pairSize = 4 * PHP_INT_SIZE;
-        $expected = \intdiv($storageByteSize, $pairSize);
+        $expectedCountBucketPairs = \intdiv($storageByteSize, $pairSize);
 
-        $this->assertEquals($expected, $settings->getMaxCountBucketPairs(), 'getMaxCountBucketPairs');
+        $this->assertEquals($expectedCountBucketPairs, $settings->getMaxCountRefBuckets(), 'getMaxCountRefBuckets');
+        $this->assertEquals(
+            $settings->getMaxCountRefBuckets(),
+            $settings->getMaxCountKeyValueBuckets(),
+            'getMaxCountRefBuckets === getMaxCountKeyValueBuckets'
+        );
         $this->assertLessThanOrEqual(
             $storageByteSize,
-            $expected * $settings->getMaxCountBucketPairs(),
+            $expectedCountBucketPairs * $settings->getMaxCountRefBuckets(),
             'Storage size is greater or equal than max count bucket pairs'
         );
     }
