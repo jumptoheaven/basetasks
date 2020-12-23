@@ -17,11 +17,15 @@ class KeyValueBucket extends AbstractBinaryBucket
      */
     public static function getLength(): int
     {
-        return  PHP_INT_SIZE * 3;
+        return PHP_INT_SIZE * 3;
     }
 
-    public function __construct(int $key, int $value, int $nextRef = self::NULL_REF, int $thisBucketRef = self::NULL_REF)
-    {
+    public function __construct(
+        int $key,
+        int $value,
+        int $nextRef = self::NULL_REF,
+        int $thisBucketRef = self::NULL_REF
+    ) {
         $this->key = $key;
         $this->value = $value;
         $this->nextRef = $nextRef;

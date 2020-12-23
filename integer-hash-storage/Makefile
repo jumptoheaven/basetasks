@@ -4,7 +4,7 @@ DOCKER_CMD=sudo HOST_UID=$(LOCAL_UID) docker-compose -p yurich-integer-hash-stor
 list:
 	cat Makefile | grep -E '^([A-Za-z\\\\-]+):( |$$)' | sed "s/:.*//g" # Список правил. кривовато, но пусть так хотя бы
 
-
+init: build composer-install
 build:
 	$(DOCKER_CMD) up -d --build
 build-force:
@@ -23,9 +23,9 @@ show-logs:
 	$(DOCKER_CMD) logs --tail=50 -f
 php-console:
 	$(DOCKER_CMD) exec php bash
-php-composer-install:
+composer-install:
 	$(DOCKER_CMD) exec php composer install
-php-composer-update:
+composer-update:
 	$(DOCKER_CMD) exec php composer update
 phpcs:
 	$(DOCKER_CMD) exec php ./vendor/bin/phpcs --standard=PSR12 ./src/
