@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Yurich\IntHashStorage;
 
-use InvalidArgumentException;
 use Yurich\IntHashStorage\Storage\MemoryManager;
 
 class IntIntHashStorage

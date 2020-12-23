@@ -5,7 +5,6 @@ namespace Yurich\IntHashStorage\Test\TestServices;
 use Yurich\IntHashStorage\IntIntHashStorage;
 use Yurich\IntHashStorage\Storage\MemoryManager;
 use Yurich\IntHashStorage\Storage\SharedMemoryManager;
-use Yurich\IntHashStorage\Storage\StorageSettings;
 use Yurich\IntHashStorage\Storage\StorageState;
 use function shmop_close;
 use function shmop_delete;
@@ -14,18 +13,19 @@ use function shmop_open;
 class TestMockServices
 {
 
-    public function createTestHashStorage(int $byteSize): IntIntHashStorage
-    {
-        $shmId = $this->createSharedMemoryResource($byteSize);
-        return new IntIntHashStorage($shmId, $byteSize);
-    }
-
     public function createMemoryManager(int $byteSize): MemoryManager
     {
         $shmId = $this->createSharedMemoryResource($byteSize);
+        return MemoryManager::create($shmId);
+    }
+
+    public function createMemoryManagerCollisions(int $byteSize): MemoryManager
+    {
+        $shmId = $this->createSharedMemoryResource($byteSize);
         $sharedMemoryManager = new SharedMemoryManager($shmId);
-        $settings = new StorageSettings($sharedMemoryManager->getByteSize());
-        $storageState = new StorageState($settings);
+        $settings = $sharedMemoryManager->createSettings();
+        $hashService = new HashServiceCollisions($settings);
+        $storageState = new StorageState($settings, $hashService);
         return new MemoryManager($sharedMemoryManager, $storageState);
     }
 
